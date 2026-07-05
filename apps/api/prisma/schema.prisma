@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SITE_MANAGER
+  TECHNICIAN
+  AUDITOR
+}
+
+enum DepreciationMethod {
+  STRAIGHT_LINE
+  DECLINING_BALANCE
+  UNITS_OF_PRODUCTION
+}
+
+enum UnitOfMeasure {
+  CALENDAR
+  HOURS
+  TONNAGE
+}
+
+enum AssetStatus {
+  ACTIVE
+  IN_MAINTENANCE
+  DECOMMISSIONED
+  DISPOSED
+}
+
+enum ValuationEventType {
+  DEPRECIATION
+  APPRECIATION
+  MANUAL_ADJUSTMENT
+  MARKET_FEED
+}
+
+enum ValuationSource {
+  SYSTEM_CALCULATED
+  MANUAL_ENTRY
+  MARKET_FEED
+}
+
+/// Tenant is the root of data isolation. Every tenant-scoped table carries
+/// tenant_id and is protected by a Postgres RLS policy (see migration SQL)
+/// keyed on the `app.current_tenant_id` session variable set per request.
+model Tenant {
+  id               String   @id @default(uuid())
+  name             String
+  subdomain        String   @unique
+  logoUrl          String?  @map("logo_url")
+  primaryColor     String   @default("#0f172a") @map("primary_color")
+  secondaryColor   String   @default("#2563eb") @map("secondary_color")
+  fontFamily       String   @default("Inter, sans-serif") @map("font_family")
+  regulatoryRegion String?  @map("regulatory_region")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  users            User[]
+  sites            Site[]
+  assetCategories  AssetCategory[]
+  assets           Asset[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  email        String
+  passwordHash String   @map("password_hash")
+  role         Role     @default(TECHNICIAN)
+  siteId       String?  @map("site_id")
+  fullName     String   @map("full_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site   Site?  @relation(fields: [siteId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@map("users")
+}
+
+model Site {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  name      String
+  location  String?
+  timezone  String   @default("UTC")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users  User[]
+  assets Asset[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("sites")
+}
+
+model AssetCategory {
+  id                       String             @id @default(uuid())
+  tenantId                 String             @map("tenant_id")
+  name                     String
+  defaultDepreciationMethod DepreciationMethod @default(STRAIGHT_LINE) @map("default_depreciation_method")
+  createdAt                DateTime           @default(now()) @map("created_at")
+  updatedAt                DateTime           @updatedAt @map("updated_at")
+
+  tenant Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assets Asset[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("asset_categories")
+}
+
+
+model Asset {
+  id                 String             @id @default(uuid())
+  tenantId           String             @map("tenant_id")
+  siteId             String             @map("site_id")
+  categoryId         String             @map("category_id")
+  name               String
+  serialNo           String             @map("serial_no")
+  purchaseDate       DateTime           @map("purchase_date")
+  purchaseValue      Decimal            @db.Decimal(18, 2) @map("purchase_value")
+  currentValue       Decimal            @db.Decimal(18, 2) @map("current_value")
+  depreciationMethod DepreciationMethod @map("depreciation_method")
+  unitOfMeasure      UnitOfMeasure      @default(CALENDAR) @map("unit_of_measure")
+  status             AssetStatus        @default(ACTIVE)
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  tenant                Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site                  Site                   @relation(fields: [siteId], references: [id])
+  category              AssetCategory          @relation(fields: [categoryId], references: [id])
+  depreciationSchedule  DepreciationSchedule?
+  valuationEvents       ValuationEvent[]
+
+  @@unique([tenantId, serialNo])
+  @@index([tenantId])
+  @@index([tenantId, siteId])
+  @@map("assets")
+}
+
+/// One-to-one configuration describing how an asset's value is recalculated.
+model DepreciationSchedule {
+  id                 String             @id @default(uuid())
+  assetId            String             @unique @map("asset_id")
+  method             DepreciationMethod
+  rate               Decimal?           @db.Decimal(9, 6)
+  usefulLifeYears    Int?               @map("useful_life_years")
+  salvageValue       Decimal            @db.Decimal(18, 2) @default(0) @map("salvage_value")
+  totalExpectedUnits Decimal?           @db.Decimal(18, 2) @map("total_expected_units")
+  unitsUsedToDate    Decimal            @db.Decimal(18, 2) @default(0) @map("units_used_to_date")
+  lastCalculatedValue Decimal?          @db.Decimal(18, 2) @map("last_calculated_value")
+  lastRunDate        DateTime?          @map("last_run_date")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("depreciation_schedules")
+}
+
+/// Immutable ledger of every valuation change. Never updated or deleted —
+/// corrections are made by appending a new event, never editing history.
+model ValuationEvent {
+  id        String             @id @default(uuid())
+  assetId   String             @map("asset_id")
+  type      ValuationEventType
+  source    ValuationSource
+  amount    Decimal            @db.Decimal(18, 2)
+  resultingValue Decimal       @db.Decimal(18, 2) @map("resulting_value")
+  note      String?
+  createdBy String?            @map("created_by")
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId])
+  @@map("valuation_events")
+}
