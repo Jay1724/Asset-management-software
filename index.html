@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mining Asset Management Platform</title>
+<meta name="description" content="White-label, multi-tenant asset management for mining operations — automated depreciation, resource allocation, and compliance tracking." />
+<style>
+  :root {
+    --bg: #f7f5f2;
+    --surface: #ffffff;
+    --ink: #17140f;
+    --ink-muted: #5a5347;
+    --border: #e6e0d6;
+    --accent: #b45309;
+    --accent-ink: #ffffff;
+    --code-bg: #f1ede5;
+    --shadow: 0 1px 2px rgba(23,20,15,0.04), 0 8px 24px rgba(23,20,15,0.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14120f;
+    --surface: #1c1a16;
+    --ink: #f3efe7;
+    --ink-muted: #a89f8f;
+    --border: #322d24;
+    --accent: #f0a94e;
+    --accent-ink: #1c1a16;
+    --code-bg: #241f18;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14120f;
+      --surface: #1c1a16;
+      --ink: #f3efe7;
+      --ink-muted: #a89f8f;
+      --border: #322d24;
+      --accent: #f0a94e;
+      --accent-ink: #1c1a16;
+      --code-bg: #241f18;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    padding: 72px 0 48px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  h1 {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    line-height: 1.15;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+  }
+  .lede {
+    font-size: 1.125rem;
+    color: var(--ink-muted);
+    max-width: 60ch;
+    margin: 0 0 32px;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.secondary { background: var(--surface); color: var(--ink); }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  h2 {
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 28px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+  .card p {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+  }
+  .card .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .stack-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .stack-list li {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .arch {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    overflow-x: auto;
+  }
+  .arch pre { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  .status-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  .status-table th, .status-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .status-table th { color: var(--ink-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  .pill {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .pill.done { background: color-mix(in srgb, #16a34a 18%, transparent); color: #16a34a; }
+  .pill.next { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+
+  footer {
+    padding: 40px 0 64px;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+  }
+  footer a { color: inherit; }
+
+  code.inline {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.85em;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow">Open source · in development</span>
+    <h1>Mining Asset Management Platform</h1>
+    <p class="lede">
+      White-label, multi-tenant asset management purpose-built for mining operations —
+      automated depreciation on real usage data, resource allocation, expiry/compliance
+      tracking, and an immutable audit trail, replacing spreadsheet-based tracking.
+    </p>
+    <div class="cta-row">
+      <a class="btn primary" href="https://github.com/jay1724/asset-management-software">View on GitHub</a>
+      <a class="btn secondary" href="https://github.com/jay1724/asset-management-software#readme">Read the docs</a>
+    </div>
+  </header>
+
+  <section>
+    <h2>Why it's different</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="tag">Depreciation</span>
+        <h3>Units-of-production, tied to real usage</h3>
+        <p>Straight-line, declining-balance, and units-of-production depreciation — the last one
+        priced per hour or per tonne, ready to be driven by a telematics feed instead of a calendar.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Security</span>
+        <h3>Tenant isolation enforced by Postgres</h3>
+        <p>Row-Level Security policies key every tenant-scoped table on the current request's
+        tenant — a bug in application filtering can't leak another tenant's data.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Branding</span>
+        <h3>White-label per tenant</h3>
+        <p>Logo, colors, and font resolved from the request's subdomain and injected as CSS
+        variables at render time — consistent across the app and, eventually, exported reports.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Audit</span>
+        <h3>Immutable valuation ledger</h3>
+        <p>Every depreciation run and manual appreciation/adjustment is appended to a
+        <code class="inline">ValuationEvent</code> ledger — never edited, never deleted.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Stack</h2>
+    <ul class="stack-list">
+      <li>Next.js 14</li>
+      <li>NestJS</li>
+      <li>PostgreSQL + RLS</li>
+      <li>Prisma</li>
+      <li>TypeScript</li>
+      <li>Tailwind CSS</li>
+      <li>JWT / RBAC</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Architecture</h2>
+    <div class="arch">
+<pre>apps/api/       NestJS backend (REST API, Postgres via Prisma)
+apps/web/       Next.js frontend (SSR, per-tenant theming)
+packages/shared/ TypeScript types shared by both apps</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Status</h2>
+    <table class="status-table">
+      <thead>
+        <tr><th>Area</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Multi-tenant scaffolding + Postgres RLS</td><td><span class="pill done">Built</span></td></tr>
+        <tr><td>Auth &amp; role-based access control</td><td><span class="pill done">Built</span></td></tr>
+        <tr><td>White-label theming</td><td><span class="pill done">Built</span></td></tr>
+        <tr><td>Site / category / asset CRUD</td><td><span class="pill done">Built</span></td></tr>
+        <tr><td>Depreciation engine (all 3 methods)</td><td><span class="pill done">Built</span></td></tr>
+        <tr><td>Resource allocation (check-out/in)</td><td><span class="pill next">Next</span></td></tr>
+        <tr><td>Expiry &amp; compliance alerting</td><td><span class="pill next">Next</span></td></tr>
+        <tr><td>Audit log across all entities</td><td><span class="pill next">Next</span></td></tr>
+        <tr><td>Telematics ingestion, SSO, offline PWA</td><td><span class="pill next">Phase 2</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <p>See the <a href="https://github.com/jay1724/asset-management-software#readme">README</a> for local setup instructions.</p>
+  </footer>
+</div>
+
+</body>
+</html>
