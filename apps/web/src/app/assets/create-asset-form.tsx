@@ -37,7 +37,7 @@ export function CreateAssetForm({ sites, categories }: { sites: Site[]; categori
         <input type="date" name="purchaseDate" required className="rounded border border-slate-300 px-2 py-1" />
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-slate-700">Purchase value</span>
+        <span className="font-medium text-slate-700">Purchase value (R)</span>
         <input type="number" name="purchaseValue" step="0.01" required className="rounded border border-slate-300 px-2 py-1" />
       </label>
       <label className="flex flex-col gap-1 text-sm">
@@ -57,7 +57,7 @@ export function CreateAssetForm({ sites, categories }: { sites: Site[]; categori
         </select>
       </label>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-slate-700">Salvage value</span>
+        <span className="font-medium text-slate-700">Salvage value (R)</span>
         <input type="number" name="salvageValue" step="0.01" className="rounded border border-slate-300 px-2 py-1" />
       </label>
       <label className="flex flex-col gap-1 text-sm">

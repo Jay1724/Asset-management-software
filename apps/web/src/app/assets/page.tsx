@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Nav } from "@/components/nav";
+import { formatCurrency } from "@/lib/format";
 import { Asset, AssetCategory, Site } from "@/lib/types";
 import { CreateAssetForm } from "./create-asset-form";
 
@@ -54,7 +55,7 @@ export default async function AssetsPage() {
               <td className="py-2">{asset.site?.name}</td>
               <td className="py-2">{asset.category?.name}</td>
               <td className="py-2">{asset.depreciationMethod}</td>
-              <td className="py-2">${Number(asset.currentValue).toLocaleString()}</td>
+              <td className="py-2">{formatCurrency(asset.currentValue)}</td>
               <td className="py-2">{asset.status}</td>
             </tr>
           ))}

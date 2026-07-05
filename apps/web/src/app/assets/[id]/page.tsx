@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { apiFetch, ApiError } from "@/lib/api";
 import { Nav } from "@/components/nav";
+import { formatCurrency } from "@/lib/format";
 import { Asset, ValuationEvent } from "@/lib/types";
 import { addValuationEvent, recalculateDepreciation, updateUsage } from "../actions";
 
@@ -31,8 +32,8 @@ export default async function AssetDetailPage({ params }: { params: { id: string
       </p>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Stat label="Purchase value" value={`$${Number(asset.purchaseValue).toLocaleString()}`} />
-        <Stat label="Current value" value={`$${Number(asset.currentValue).toLocaleString()}`} highlight />
+        <Stat label="Purchase value" value={formatCurrency(asset.purchaseValue)} />
+        <Stat label="Current value" value={formatCurrency(asset.currentValue)} highlight />
         <Stat label="Method" value={asset.depreciationMethod} />
         <Stat label="Status" value={asset.status} />
       </div>
@@ -43,7 +44,7 @@ export default async function AssetDetailPage({ params }: { params: { id: string
           <div className="flex flex-wrap items-end gap-4 rounded border border-slate-200 p-4">
             <dl className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
               <dt className="text-slate-500">Salvage value</dt>
-              <dd>${Number(schedule.salvageValue).toLocaleString()}</dd>
+              <dd>{formatCurrency(schedule.salvageValue)}</dd>
               {schedule.usefulLifeYears != null && (
                 <>
                   <dt className="text-slate-500">Useful life</dt>
@@ -105,7 +106,7 @@ export default async function AssetDetailPage({ params }: { params: { id: string
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-slate-700">Amount (signed)</span>
+            <span className="font-medium text-slate-700">Amount (signed, R)</span>
             <input type="number" name="amount" step="0.01" required className="rounded border border-slate-300 px-2 py-1" />
           </label>
           <label className="flex flex-1 flex-col gap-1 text-sm">
@@ -137,8 +138,8 @@ export default async function AssetDetailPage({ params }: { params: { id: string
                 <td className="py-2">{new Date(event.createdAt).toLocaleString()}</td>
                 <td className="py-2">{event.type}</td>
                 <td className="py-2">{event.source}</td>
-                <td className="py-2">{Number(event.amount).toLocaleString()}</td>
-                <td className="py-2">${Number(event.resultingValue).toLocaleString()}</td>
+                <td className="py-2">{formatCurrency(event.amount)}</td>
+                <td className="py-2">{formatCurrency(event.resultingValue)}</td>
                 <td className="py-2">{event.note ?? "—"}</td>
               </tr>
             ))}
