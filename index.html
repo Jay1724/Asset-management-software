@@ -3,42 +3,39 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mining Asset Management Platform</title>
-<meta name="description" content="White-label, multi-tenant asset management for mining operations — automated depreciation, resource allocation, and compliance tracking." />
+<title>Mining Asset Platform</title>
+<meta name="description" content="Mining asset management platform — sign in and manage sites, assets, and depreciation, backed by Supabase." />
 <style>
   :root {
-    --bg: #f7f5f2;
+    --tenant-primary: #0f172a;
+    --tenant-secondary: #f59e0b;
+    --bg: #f8fafc;
     --surface: #ffffff;
-    --ink: #17140f;
-    --ink-muted: #5a5347;
-    --border: #e6e0d6;
-    --accent: #b45309;
-    --accent-ink: #ffffff;
-    --code-bg: #f1ede5;
-    --shadow: 0 1px 2px rgba(23,20,15,0.04), 0 8px 24px rgba(23,20,15,0.06);
+    --ink: #0f172a;
+    --ink-muted: #64748b;
+    --border: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --danger: #b91c1c;
+    --shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06);
   }
   :root[data-theme="dark"] {
-    --bg: #14120f;
-    --surface: #1c1a16;
-    --ink: #f3efe7;
-    --ink-muted: #a89f8f;
-    --border: #322d24;
-    --accent: #f0a94e;
-    --accent-ink: #1c1a16;
-    --code-bg: #241f18;
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+    --bg: #0b1120;
+    --surface: #111827;
+    --ink: #e5e7eb;
+    --ink-muted: #94a3b8;
+    --border: #263041;
+    --code-bg: #17202f;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #14120f;
-      --surface: #1c1a16;
-      --ink: #f3efe7;
-      --ink-muted: #a89f8f;
-      --border: #322d24;
-      --accent: #f0a94e;
-      --accent-ink: #1c1a16;
-      --code-bg: #241f18;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.4);
+      --bg: #0b1120;
+      --surface: #111827;
+      --ink: #e5e7eb;
+      --ink-muted: #94a3b8;
+      --border: #263041;
+      --code-bg: #17202f;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5);
     }
   }
 
@@ -48,257 +45,634 @@
     background: var(--bg);
     color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
-    line-height: 1.55;
+    line-height: 1.5;
   }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+  button, input, select { font: inherit; color: inherit; }
 
-  header.hero {
-    padding: 72px 0 48px;
+  .banner {
+    background: var(--code-bg);
     border-bottom: 1px solid var(--border);
-  }
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 18px;
-  }
-  .eyebrow::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-  h1 {
-    font-size: clamp(2rem, 4vw, 2.75rem);
-    line-height: 1.15;
-    margin: 0 0 16px;
-    letter-spacing: -0.02em;
-  }
-  .lede {
-    font-size: 1.125rem;
+    font-size: 0.8rem;
     color: var(--ink-muted);
-    max-width: 60ch;
-    margin: 0 0 32px;
+    text-align: center;
+    padding: 6px 12px;
   }
-  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .banner a { color: var(--tenant-secondary); font-weight: 600; text-decoration: none; }
+  .banner a:hover { text-decoration: underline; }
+
+  header.appbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 12px 24px;
+  }
+  .logo-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--tenant-primary);
+    flex-shrink: 0;
+  }
+  .tenant-name { font-weight: 700; font-size: 1.05rem; color: var(--tenant-primary); }
+  :root[data-theme="dark"] .tenant-name { color: #fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tenant-name { color: #fff; } }
+
+  nav.tabs { display: flex; gap: 18px; margin-left: 24px; font-size: 0.9rem; }
+  nav.tabs a { text-decoration: none; color: var(--ink-muted); font-weight: 600; padding: 4px 0; border-bottom: 2px solid transparent; cursor: pointer; }
+  nav.tabs a.active { color: var(--ink); border-color: var(--tenant-secondary); }
+  .spacer { flex: 1; }
+  .who { font-size: 0.82rem; color: var(--ink-muted); margin-right: 12px; text-align: right; }
+  .who b { color: var(--ink); }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 28px 24px 80px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 0 0 12px; }
+  .muted { color: var(--ink-muted); }
+  .text-xs { font-size: 0.78rem; }
+
   .btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-size: 0.95rem;
+    gap: 6px;
+    border-radius: 7px;
+    padding: 8px 14px;
+    font-size: 0.88rem;
     font-weight: 600;
-    text-decoration: none;
     border: 1px solid var(--border);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-  }
-  .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
-  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .btn.secondary { background: var(--surface); color: var(--ink); }
-
-  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
-  section:last-of-type { border-bottom: none; }
-  h2 {
-    font-size: 1.5rem;
-    letter-spacing: -0.01em;
-    margin: 0 0 28px;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-  }
-  .card {
     background: var(--surface);
+    cursor: pointer;
+  }
+  .btn.primary { background: var(--tenant-primary); color: #fff; border-color: var(--tenant-primary); }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-muted); }
+  .btn.ghost:hover { color: var(--ink); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: end; margin-bottom: 20px; }
+  .field { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
+  .field span.label { font-weight: 600; color: var(--ink-muted); font-size: 0.78rem; }
+  .field input, .field select {
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
+    background: var(--bg);
+    color: var(--ink);
+    border-radius: 6px;
+    padding: 7px 9px;
   }
-  .card h3 {
-    margin: 0 0 8px;
-    font-size: 1rem;
-  }
-  .card p {
-    margin: 0;
-    color: var(--ink-muted);
-    font-size: 0.92rem;
-  }
-  .card .tag {
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 10px;
-  }
+  .hint { font-size: 0.72rem; color: var(--ink-muted); }
 
-  .stack-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .stack-list li {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--ink-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  tr:last-child td { border-bottom: none; }
+  td a.link { color: var(--tenant-primary); font-weight: 600; text-decoration: none; }
+  :root[data-theme="dark"] td a.link { color: var(--tenant-secondary); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) td a.link { color: var(--tenant-secondary); } }
+  td a.link:hover { text-decoration: underline; }
 
-  .arch {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    font-size: 0.9rem;
-    color: var(--ink-muted);
-    overflow-x: auto;
-  }
-  .arch pre { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .stat .label { font-size: 0.72rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .stat .value { font-size: 1.2rem; font-weight: 700; margin-top: 2px; }
+  .stat.highlight .value { color: var(--tenant-primary); }
+  :root[data-theme="dark"] .stat.highlight .value { color: var(--tenant-secondary); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stat.highlight .value { color: var(--tenant-secondary); } }
 
-  .status-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.92rem;
-  }
-  .status-table th, .status-table td {
-    text-align: left;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .status-table th { color: var(--ink-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
-  .pill {
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-  }
-  .pill.done { background: color-mix(in srgb, #16a34a 18%, transparent); color: #16a34a; }
-  .pill.next { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+  section.block { margin-top: 30px; }
+  .row-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
 
-  footer {
-    padding: 40px 0 64px;
-    color: var(--ink-muted);
-    font-size: 0.85rem;
-  }
-  footer a { color: inherit; }
+  .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--code-bg); color: var(--ink-muted); }
+  .badge.role { background: color-mix(in srgb, var(--tenant-secondary) 20%, transparent); color: var(--tenant-secondary); }
 
-  code.inline {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 6px;
-    font-size: 0.85em;
-  }
+  .empty { color: var(--ink-muted); padding: 18px 0; text-align: center; font-size: 0.9rem; }
+  .notice { border: 1px solid #fbbf24; background: color-mix(in srgb, #fbbf24 15%, transparent); color: #92400e; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 16px; }
+  :root[data-theme="dark"] .notice { color: #fbbf24; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .notice { color: #fbbf24; } }
+  .notice.error { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+
+  .login-wrap { max-width: 380px; margin: 60px auto; }
+  .login-wrap .card { padding: 28px; }
+  .login-users { margin-top: 18px; font-size: 0.78rem; color: var(--ink-muted); }
+  .login-users code { background: var(--code-bg); border-radius: 4px; padding: 1px 5px; }
+  .error-text { color: var(--danger); font-size: 0.85rem; }
+
+  footer.app-footer { text-align: center; padding: 24px; font-size: 0.78rem; color: var(--ink-muted); }
+
+  .setup-wrap { max-width: 640px; margin: 60px auto; padding: 0 24px; }
+  .setup-wrap ol { padding-left: 20px; }
+  .setup-wrap li { margin-bottom: 10px; }
+  .setup-wrap code.block { display: block; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; overflow-x: auto; white-space: pre; margin: 6px 0; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--tenant-secondary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header class="hero">
-    <span class="eyebrow">Open source · in development</span>
-    <h1>Mining Asset Management Platform</h1>
-    <p class="lede">
-      White-label, multi-tenant asset management purpose-built for mining operations —
-      automated depreciation on real usage data, resource allocation, expiry/compliance
-      tracking, and an immutable audit trail, replacing spreadsheet-based tracking.
-    </p>
-    <div class="cta-row">
-      <a class="btn primary" href="https://github.com/jay1724/asset-management-software">View on GitHub</a>
-      <a class="btn secondary" href="https://github.com/jay1724/asset-management-software#readme">Read the docs</a>
-    </div>
-  </header>
-
-  <section>
-    <h2>Why it's different</h2>
-    <div class="grid">
-      <div class="card">
-        <span class="tag">Depreciation</span>
-        <h3>Units-of-production, tied to real usage</h3>
-        <p>Straight-line, declining-balance, and units-of-production depreciation — the last one
-        priced per hour or per tonne, ready to be driven by a telematics feed instead of a calendar.</p>
-      </div>
-      <div class="card">
-        <span class="tag">Security</span>
-        <h3>Tenant isolation enforced by Postgres</h3>
-        <p>Row-Level Security policies key every tenant-scoped table on the current request's
-        tenant — a bug in application filtering can't leak another tenant's data.</p>
-      </div>
-      <div class="card">
-        <span class="tag">Branding</span>
-        <h3>White-label per tenant</h3>
-        <p>Logo, colors, and font resolved from the request's subdomain and injected as CSS
-        variables at render time — consistent across the app and, eventually, exported reports.</p>
-      </div>
-      <div class="card">
-        <span class="tag">Audit</span>
-        <h3>Immutable valuation ledger</h3>
-        <p>Every depreciation run and manual appreciation/adjustment is appended to a
-        <code class="inline">ValuationEvent</code> ledger — never edited, never deleted.</p>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Stack</h2>
-    <ul class="stack-list">
-      <li>Next.js 14</li>
-      <li>NestJS</li>
-      <li>PostgreSQL + RLS</li>
-      <li>Prisma</li>
-      <li>TypeScript</li>
-      <li>Tailwind CSS</li>
-      <li>JWT / RBAC</li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>Architecture</h2>
-    <div class="arch">
-<pre>apps/api/       NestJS backend (REST API, Postgres via Prisma)
-apps/web/       Next.js frontend (SSR, per-tenant theming)
-packages/shared/ TypeScript types shared by both apps</pre>
-    </div>
-  </section>
-
-  <section>
-    <h2>Status</h2>
-    <table class="status-table">
-      <thead>
-        <tr><th>Area</th><th>Status</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Multi-tenant scaffolding + Postgres RLS</td><td><span class="pill done">Built</span></td></tr>
-        <tr><td>Auth &amp; role-based access control</td><td><span class="pill done">Built</span></td></tr>
-        <tr><td>White-label theming</td><td><span class="pill done">Built</span></td></tr>
-        <tr><td>Site / category / asset CRUD</td><td><span class="pill done">Built</span></td></tr>
-        <tr><td>Depreciation engine (all 3 methods)</td><td><span class="pill done">Built</span></td></tr>
-        <tr><td>Resource allocation (check-out/in)</td><td><span class="pill next">Next</span></td></tr>
-        <tr><td>Expiry &amp; compliance alerting</td><td><span class="pill next">Next</span></td></tr>
-        <tr><td>Audit log across all entities</td><td><span class="pill next">Next</span></td></tr>
-        <tr><td>Telematics ingestion, SSO, offline PWA</td><td><span class="pill next">Phase 2</span></td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <footer>
-    <p>See the <a href="https://github.com/jay1724/asset-management-software#readme">README</a> for local setup instructions.</p>
-  </footer>
+<div class="banner">
+  Real, hosted platform &mdash; sign in with your account &middot;
+  <a href="https://github.com/jay1724/asset-management-software" target="_blank" rel="noopener">Source on GitHub</a>
+  &middot; <a href="demo-offline.html">Prefer a no-login sandbox? Try the offline demo</a>
 </div>
+
+<div id="app"><div style="text-align:center;padding:80px 0;"><span class="spinner"></span></div></div>
+
+<script type="module">
+// =====================================================================
+// Configuration — fill these in with your Supabase project's values
+// (Project Settings → API in the Supabase dashboard). The anon key is
+// safe to expose in client-side code: Row-Level Security in
+// supabase/schema.sql is what actually protects the data, not secrecy
+// of this key. See SUPABASE_SETUP.md for the full setup walkthrough.
+// =====================================================================
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+// Which tenant's branding to show on the (pre-login) sign-in screen.
+// After login, the signed-in user's own tenant is used for everything else.
+const DEFAULT_TENANT_SUBDOMAIN = "demo";
+
+const NOT_CONFIGURED = SUPABASE_URL === "YOUR_SUPABASE_URL" || SUPABASE_ANON_KEY === "YOUR_SUPABASE_ANON_KEY";
+
+if (NOT_CONFIGURED) {
+  document.getElementById("app").innerHTML = renderSetupNotice();
+} else {
+  runApp();
+}
+
+function renderSetupNotice() {
+  return (
+    '<div class="setup-wrap">' +
+      "<h1>Almost there &mdash; connect a Supabase project</h1>" +
+      '<p class="muted">This page is a real, hosted web app: it talks directly to a Supabase project (Postgres + Auth + Row-Level Security) from the browser. It just needs two values filled in first.</p>' +
+      "<ol>" +
+        "<li>Create a free project at <a href=\"https://supabase.com\" target=\"_blank\" rel=\"noopener\">supabase.com</a>.</li>" +
+        "<li>Open the SQL Editor and run the contents of <code>supabase/schema.sql</code> from this repo.</li>" +
+        "<li>From the repo's <code>supabase/</code> folder, run the seed script (see <code>SUPABASE_SETUP.md</code>) to create the demo tenant, users, and sample assets.</li>" +
+        "<li>In Project Settings &rarr; API, copy the <b>Project URL</b> and <b>anon public</b> key.</li>" +
+        '<li>Open this file and set <code class="block">const SUPABASE_URL = "https://xxxx.supabase.co";\nconst SUPABASE_ANON_KEY = "ey...";</code> then save and reload (or redeploy to GitHub Pages).</li>' +
+      "</ol>" +
+      '<p class="muted text-xs">Full walkthrough: <a href="SUPABASE_SETUP.md">SUPABASE_SETUP.md</a>. Prefer to look around first? <a href="demo-offline.html">Try the no-login offline demo</a>.</p>' +
+    "</div>"
+  );
+}
+
+async function runApp() {
+  const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+  const currencyFmt = new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 });
+  function money(v) { return v == null ? "—" : currencyFmt.format(Number(v)); }
+  function dt(ts) { return ts ? new Date(ts).toLocaleString() : "Never"; }
+  function num(v) { return v == null ? "—" : Number(v).toLocaleString(); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function can(profile, roles) { return !!profile && roles.indexOf(profile.role) !== -1; }
+
+  var appEl = document.getElementById("app");
+  var tenantTheme = { name: "Mining Asset Platform", primary_color: "#0f172a", secondary_color: "#f59e0b" };
+  var lastError = null;
+
+  // -------------------------------------------------------------------
+  // Auth / session
+  // -------------------------------------------------------------------
+  async function getSessionUser() {
+    const { data } = await supabase.auth.getUser();
+    return data && data.user ? data.user : null;
+  }
+
+  async function getProfile(userId) {
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+    if (error) return null;
+    return data;
+  }
+
+  async function loadTenantTheme(tenantId, fallbackSubdomain) {
+    var query = supabase.from("tenants").select("*");
+    query = tenantId ? query.eq("id", tenantId) : query.eq("subdomain", fallbackSubdomain);
+    const { data, error } = await query.maybeSingle();
+    if (!error && data) tenantTheme = data;
+  }
+
+  function applyTheme() {
+    document.documentElement.style.setProperty("--tenant-primary", tenantTheme.primary_color || "#0f172a");
+    document.documentElement.style.setProperty("--tenant-secondary", tenantTheme.secondary_color || "#f59e0b");
+  }
+
+  // -------------------------------------------------------------------
+  // Router
+  // -------------------------------------------------------------------
+  function route() { return location.hash.replace(/^#/, "") || "/assets"; }
+  window.addEventListener("hashchange", render);
+
+  async function render() {
+    lastError = null;
+    const user = await getSessionUser();
+
+    if (!user) {
+      await loadTenantTheme(null, DEFAULT_TENANT_SUBDOMAIN);
+      applyTheme();
+      appEl.innerHTML = renderLogin();
+      wireLogin();
+      return;
+    }
+
+    const profile = await getProfile(user.id);
+    if (!profile || !profile.tenant_id) {
+      appEl.innerHTML = '<div class="setup-wrap"><h1>No profile found</h1><p class="muted">This account has no tenant/role assigned yet. Ask an admin to set one up, or check that the seed script ran.</p><button class="btn" id="btn-logout-broken">Sign out</button></div>';
+      document.getElementById("btn-logout-broken").onclick = async function () { await supabase.auth.signOut(); render(); };
+      return;
+    }
+
+    await loadTenantTheme(profile.tenant_id, DEFAULT_TENANT_SUBDOMAIN);
+    applyTheme();
+
+    const path = route();
+    if (path === "/login") { location.hash = "#/assets"; return; }
+
+    appEl.innerHTML = renderShell(profile, path) + '<div id="page-body"><div style="padding:40px 0;text-align:center;"><span class="spinner"></span></div></div></main>';
+    wireGlobal();
+
+    try {
+      var body;
+      if (path === "/sites") body = await renderSites(profile);
+      else if (path === "/asset-categories") body = await renderCategories(profile);
+      else if (/^\/assets\/(.+)$/.test(path)) body = await renderAssetDetail(profile, RegExp.$1);
+      else body = await renderAssets(profile);
+      document.getElementById("page-body").outerHTML = body;
+    } catch (err) {
+      document.getElementById("page-body").outerHTML = '<div class="notice error">' + esc(err.message || String(err)) + "</div>";
+      return;
+    }
+
+    if (path === "/sites") wireSites(profile);
+    else if (path === "/asset-categories") wireCategories(profile);
+    else if (/^\/assets\/(.+)$/.test(path)) wireAssetDetail(profile, RegExp.$1);
+    else wireAssets(profile);
+  }
+
+  function renderShell(profile, path) {
+    function tab(href, label) {
+      var active = path === href || (href === "/assets" && /^\/assets/.test(path));
+      return '<a href="#' + href + '" class="' + (active ? "active" : "") + '">' + label + "</a>";
+    }
+    return (
+      '<header class="appbar">' +
+        '<div class="logo-badge">' + esc((tenantTheme.name || "M").charAt(0)) + "</div>" +
+        '<span class="tenant-name">' + esc(tenantTheme.name || "Mining Asset Platform") + "</span>" +
+        '<nav class="tabs">' +
+          tab("/assets", "Assets") + tab("/sites", "Sites") + tab("/asset-categories", "Categories") +
+        "</nav>" +
+        '<div class="spacer"></div>' +
+        '<div class="who"><b>' + esc(profile.full_name) + "</b> <span class=\"badge role\">" + esc(profile.role) + "</span></div>" +
+        '<button class="btn ghost" id="btn-logout">Sign out</button>' +
+      "</header>" +
+      "<main>"
+    );
+  }
+
+  function wireGlobal() {
+    var logoutBtn = document.getElementById("btn-logout");
+    if (logoutBtn) logoutBtn.onclick = async function () { await supabase.auth.signOut(); location.hash = "#/assets"; render(); };
+  }
+
+  // -------------------------------------------------------------------
+  // Login
+  // -------------------------------------------------------------------
+  function renderLogin() {
+    return (
+      '<div class="login-wrap">' +
+        '<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:20px;">' +
+          '<div class="logo-badge">' + esc((tenantTheme.name || "M").charAt(0)) + "</div>" +
+          '<span class="tenant-name" style="font-size:1.2rem;">' + esc(tenantTheme.name || "Mining Asset Platform") + "</span>" +
+        "</div>" +
+        '<div class="card">' +
+          "<h1>Sign in</h1>" +
+          '<form id="login-form" style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">' +
+            '<div class="field"><span class="label">Email</span><input type="email" id="login-email" required></div>' +
+            '<div class="field"><span class="label">Password</span><input type="password" id="login-password" required></div>' +
+            '<div id="login-error" class="error-text"></div>' +
+            '<button type="submit" class="btn primary" id="login-submit">Sign in</button>' +
+          "</form>" +
+          '<p class="login-users">If you ran <code>supabase/seed.mjs</code>, the demo logins are <code>admin@demo.test</code> / <code>manager@demo.test</code> / <code>tech@demo.test</code> / <code>auditor@demo.test</code>, password <code>password123</code> for all.</p>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+  function wireLogin() {
+    var form = document.getElementById("login-form");
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      var submitBtn = document.getElementById("login-submit");
+      var errorEl = document.getElementById("login-error");
+      errorEl.textContent = "";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Signing in...";
+      const { error } = await supabase.auth.signInWithPassword({
+        email: document.getElementById("login-email").value.trim(),
+        password: document.getElementById("login-password").value,
+      });
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Sign in";
+      if (error) { errorEl.textContent = error.message; return; }
+      location.hash = "#/assets";
+      render();
+    };
+  }
+
+  // -------------------------------------------------------------------
+  // Sites
+  // -------------------------------------------------------------------
+  async function renderSites(profile) {
+    const canWrite = can(profile, ["ADMIN"]);
+    const { data: sites, error } = await supabase.from("sites").select("*").order("name");
+    if (error) throw error;
+
+    var rows = sites.map(function (s) {
+      return "<tr><td>" + esc(s.name) + "</td><td>" + esc(s.location || "—") + "</td><td>" + esc(s.timezone) + "</td></tr>";
+    }).join("");
+
+    return (
+      '<div id="page-body">' +
+      "<h1>Sites</h1>" +
+      (canWrite ? (
+        '<form id="site-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Name</span><input name="name" required></div>' +
+          '<div class="field"><span class="label">Location</span><input name="location"></div>' +
+          '<div class="field"><span class="label">Timezone</span><input name="timezone" placeholder="UTC"></div>' +
+          '<div class="field"><button type="submit" class="btn primary">Add site</button></div>' +
+        "</form>"
+      ) : '<p class="notice">Only Admins can add sites. Signed in as ' + esc(profile.role) + ".</p>") +
+      '<table><thead><tr><th>Name</th><th>Location</th><th>Timezone</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="3" class="empty">No sites yet.</td></tr>') +
+      "</tbody></table></div>"
+    );
+  }
+  function wireSites(profile) {
+    var form = document.getElementById("site-form");
+    if (!form) return;
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      const { error } = await supabase.from("sites").insert({
+        tenant_id: profile.tenant_id,
+        name: fd.get("name"),
+        location: fd.get("location") || null,
+        timezone: fd.get("timezone") || "UTC",
+      });
+      if (error) { alert(error.message); return; }
+      render();
+    };
+  }
+
+  // -------------------------------------------------------------------
+  // Categories
+  // -------------------------------------------------------------------
+  async function renderCategories(profile) {
+    const canWrite = can(profile, ["ADMIN"]);
+    const { data: categories, error } = await supabase.from("asset_categories").select("*").order("name");
+    if (error) throw error;
+
+    var rows = categories.map(function (c) {
+      return "<tr><td>" + esc(c.name) + "</td><td>" + esc(c.default_depreciation_method) + "</td></tr>";
+    }).join("");
+
+    return (
+      '<div id="page-body">' +
+      "<h1>Asset Categories</h1>" +
+      (canWrite ? (
+        '<form id="cat-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Name</span><input name="name" required></div>' +
+          '<div class="field"><span class="label">Default depreciation method</span>' +
+            '<select name="method">' +
+              '<option value="STRAIGHT_LINE">Straight-line</option>' +
+              '<option value="DECLINING_BALANCE">Declining balance</option>' +
+              '<option value="UNITS_OF_PRODUCTION">Units of production</option>' +
+            "</select></div>" +
+          '<div class="field"><button type="submit" class="btn primary">Add category</button></div>' +
+        "</form>"
+      ) : '<p class="notice">Only Admins can add categories. Signed in as ' + esc(profile.role) + ".</p>") +
+      '<table><thead><tr><th>Name</th><th>Default depreciation method</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="2" class="empty">No categories yet.</td></tr>') +
+      "</tbody></table></div>"
+    );
+  }
+  function wireCategories(profile) {
+    var form = document.getElementById("cat-form");
+    if (!form) return;
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      const { error } = await supabase.from("asset_categories").insert({
+        tenant_id: profile.tenant_id,
+        name: fd.get("name"),
+        default_depreciation_method: fd.get("method"),
+      });
+      if (error) { alert(error.message); return; }
+      render();
+    };
+  }
+
+  // -------------------------------------------------------------------
+  // Assets list
+  // -------------------------------------------------------------------
+  async function renderAssets(profile) {
+    const canWrite = can(profile, ["ADMIN", "SITE_MANAGER"]);
+    const [{ data: assets, error: assetsErr }, { data: sites, error: sitesErr }, { data: categories, error: catsErr }] = await Promise.all([
+      supabase.from("assets").select("*, site:sites(name), category:asset_categories(name)").order("name"),
+      supabase.from("sites").select("*").order("name"),
+      supabase.from("asset_categories").select("*").order("name"),
+    ]);
+    if (assetsErr) throw assetsErr;
+    if (sitesErr) throw sitesErr;
+    if (catsErr) throw catsErr;
+
+    var rows = assets.map(function (a) {
+      return (
+        "<tr><td><a class=\"link\" href=\"#/assets/" + a.id + "\">" + esc(a.name) + "</a>" +
+        '<div class="muted text-xs">' + esc(a.serial_no) + "</div></td>" +
+        "<td>" + esc(a.site ? a.site.name : "—") + "</td>" +
+        "<td>" + esc(a.category ? a.category.name : "—") + "</td>" +
+        "<td>" + esc(a.depreciation_method) + "</td>" +
+        "<td>" + money(a.current_value) + "</td>" +
+        "<td>" + esc(a.status) + "</td></tr>"
+      );
+    }).join("");
+
+    var siteOpts = sites.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + "</option>"; }).join("");
+    var catOpts = categories.map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + "</option>"; }).join("");
+
+    return (
+      '<div id="page-body">' +
+      "<h1>Assets</h1>" +
+      (!canWrite ? '<p class="notice">Only Admins and Site Managers can add assets. Signed in as ' + esc(profile.role) + ".</p>" :
+        sites.length === 0 || categories.length === 0 ? '<p class="notice">Create at least one site and category before adding assets.</p>' : (
+        '<form id="asset-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Name</span><input name="name" required></div>' +
+          '<div class="field"><span class="label">Serial #</span><input name="serialNo" required></div>' +
+          '<div class="field"><span class="label">Site</span><select name="siteId" required>' + siteOpts + "</select></div>" +
+          '<div class="field"><span class="label">Category</span><select name="categoryId" required>' + catOpts + "</select></div>" +
+          '<div class="field"><span class="label">Purchase date</span><input type="date" name="purchaseDate" required></div>' +
+          '<div class="field"><span class="label">Purchase value (R)</span><input type="number" step="0.01" name="purchaseValue" required></div>' +
+          '<div class="field"><span class="label">Depreciation method</span><select name="depreciationMethod">' +
+            '<option value="STRAIGHT_LINE">Straight-line</option>' +
+            '<option value="DECLINING_BALANCE">Declining balance</option>' +
+            '<option value="UNITS_OF_PRODUCTION">Units of production</option>' +
+          "</select></div>" +
+          '<div class="field"><span class="label">Unit of measure</span><select name="unitOfMeasure">' +
+            '<option value="CALENDAR">Calendar</option><option value="HOURS">Hours</option><option value="TONNAGE">Tonnage</option>' +
+          "</select></div>" +
+          '<div class="field"><span class="label">Salvage value (R)</span><input type="number" step="0.01" name="salvageValue" value="0"></div>' +
+          '<div class="field"><span class="label">Useful life (years)</span><input type="number" name="usefulLifeYears"><span class="hint">Straight-line / declining</span></div>' +
+          '<div class="field"><span class="label">Total expected units</span><input type="number" name="totalExpectedUnits"><span class="hint">Units of production</span></div>' +
+          '<div class="field"><button type="submit" class="btn primary">Add asset</button></div>' +
+        "</form>"
+      )) +
+      '<table><thead><tr><th>Name</th><th>Site</th><th>Category</th><th>Method</th><th>Current value</th><th>Status</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="6" class="empty">No assets yet.</td></tr>') +
+      "</tbody></table></div>"
+    );
+  }
+  function wireAssets(profile) {
+    var form = document.getElementById("asset-form");
+    if (!form) return;
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      const { error } = await supabase.rpc("create_asset", {
+        p_site_id: fd.get("siteId"),
+        p_category_id: fd.get("categoryId"),
+        p_name: fd.get("name"),
+        p_serial_no: fd.get("serialNo"),
+        p_purchase_date: fd.get("purchaseDate"),
+        p_purchase_value: Number(fd.get("purchaseValue")),
+        p_depreciation_method: fd.get("depreciationMethod"),
+        p_unit_of_measure: fd.get("unitOfMeasure"),
+        p_salvage_value: Number(fd.get("salvageValue") || 0),
+        p_useful_life_years: fd.get("usefulLifeYears") ? Number(fd.get("usefulLifeYears")) : null,
+        p_total_expected_units: fd.get("totalExpectedUnits") ? Number(fd.get("totalExpectedUnits")) : null,
+      });
+      if (error) { alert(error.message); return; }
+      render();
+    };
+  }
+
+  // -------------------------------------------------------------------
+  // Asset detail
+  // -------------------------------------------------------------------
+  async function renderAssetDetail(profile, id) {
+    const [{ data: asset, error: assetErr }, { data: events, error: eventsErr }] = await Promise.all([
+      supabase.from("assets").select("*, site:sites(name), category:asset_categories(name), schedule:depreciation_schedules(*)").eq("id", id).maybeSingle(),
+      supabase.from("valuation_events").select("*").eq("asset_id", id).order("created_at", { ascending: false }),
+    ]);
+    if (assetErr) throw assetErr;
+    if (eventsErr) throw eventsErr;
+    if (!asset) return '<div id="page-body"><p class="empty">Asset not found. <a class="link" href="#/assets">Back to assets</a></p></div>';
+
+    var s = Array.isArray(asset.schedule) ? asset.schedule[0] : asset.schedule;
+    var canRecalc = can(profile, ["ADMIN", "SITE_MANAGER"]);
+    var canManual = can(profile, ["ADMIN"]);
+
+    var scheduleRows = s ? (
+      "<dt class=\"muted\">Salvage value</dt><dd>" + money(s.salvage_value) + "</dd>" +
+      (s.useful_life_years != null ? "<dt class=\"muted\">Useful life</dt><dd>" + s.useful_life_years + " years</dd>" : "") +
+      (s.total_expected_units != null ? "<dt class=\"muted\">Total expected units</dt><dd>" + num(s.total_expected_units) + "</dd><dt class=\"muted\">Units used to date</dt><dd>" + num(s.units_used_to_date) + "</dd>" : "") +
+      "<dt class=\"muted\">Last run</dt><dd>" + dt(s.last_run_date) + "</dd>"
+    ) : "";
+
+    var eventRows = events.map(function (ev) {
+      return "<tr><td>" + dt(ev.created_at) + "</td><td>" + esc(ev.type) + "</td><td>" + esc(ev.source) + "</td><td>" + money(ev.amount) + "</td><td>" + money(ev.resulting_value) + "</td><td>" + esc(ev.note || "—") + "</td></tr>";
+    }).join("");
+
+    return (
+      '<div id="page-body">' +
+      "<h1>" + esc(asset.name) + "</h1>" +
+      '<p class="muted">' + esc(asset.serial_no) + " &middot; " + esc(asset.site ? asset.site.name : "—") + " &middot; " + esc(asset.category ? asset.category.name : "—") + "</p>" +
+      '<div class="stat-grid">' +
+        '<div class="stat"><div class="label">Purchase value</div><div class="value">' + money(asset.purchase_value) + "</div></div>" +
+        '<div class="stat highlight"><div class="label">Current value</div><div class="value">' + money(asset.current_value) + "</div></div>" +
+        '<div class="stat"><div class="label">Method</div><div class="value" style="font-size:0.95rem;">' + esc(asset.depreciation_method) + "</div></div>" +
+        '<div class="stat"><div class="label">Status</div><div class="value" style="font-size:0.95rem;">' + esc(asset.status) + "</div></div>" +
+      "</div>" +
+
+      '<section class="block"><h2>Depreciation</h2><div class="card row-actions">' +
+        '<dl style="display:grid;grid-template-columns:auto auto;gap:2px 24px;font-size:0.88rem;margin:0;">' + scheduleRows + "</dl>" +
+        (canRecalc ? '<button id="btn-recalc" class="btn primary">Recalculate now</button>' : "") +
+        (canRecalc && s && asset.depreciation_method === "UNITS_OF_PRODUCTION" ? (
+          '<form id="usage-form" class="row-actions">' +
+            '<div class="field"><span class="label">Units used to date</span><input type="number" step="0.01" name="unitsUsedToDate" value="' + s.units_used_to_date + '"></div>' +
+            '<button type="submit" class="btn">Update usage</button>' +
+          "</form>"
+        ) : "") +
+      "</div></section>" +
+
+      (canManual ? (
+        '<section class="block"><h2>Manual valuation event</h2>' +
+        '<p class="muted text-xs">For appreciation (land, mineral rights) or one-off adjustments. Always logged, never silent.</p>' +
+        '<form id="event-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Type</span><select name="type"><option value="APPRECIATION">Appreciation</option><option value="MANUAL_ADJUSTMENT">Manual adjustment</option></select></div>' +
+          '<div class="field"><span class="label">Amount (signed, R)</span><input type="number" step="0.01" name="amount" required></div>' +
+          '<div class="field"><span class="label">Note</span><input name="note"></div>' +
+          '<div class="field"><button type="submit" class="btn">Log event</button></div>' +
+        "</form></section>"
+      ) : "") +
+
+      '<section class="block"><h2>Valuation history</h2>' +
+      '<table><thead><tr><th>Date</th><th>Type</th><th>Source</th><th>Amount</th><th>Resulting value</th><th>Note</th></tr></thead><tbody>' +
+      (eventRows || '<tr><td colspan="6" class="empty">No valuation events yet.</td></tr>') +
+      "</tbody></table></section>" +
+      '<p style="margin-top:24px;"><a class="link" href="#/assets">&larr; Back to assets</a></p>' +
+      "</div>"
+    );
+  }
+  function wireAssetDetail(profile, id) {
+    var recalcBtn = document.getElementById("btn-recalc");
+    if (recalcBtn) recalcBtn.onclick = async function () {
+      recalcBtn.disabled = true;
+      const { error } = await supabase.rpc("recalculate_depreciation", { p_asset_id: id });
+      if (error) { alert(error.message); recalcBtn.disabled = false; return; }
+      render();
+    };
+    var usageForm = document.getElementById("usage-form");
+    if (usageForm) usageForm.onsubmit = async function (e) {
+      e.preventDefault();
+      const units = Number(new FormData(usageForm).get("unitsUsedToDate"));
+      const { error } = await supabase.rpc("update_asset_usage", { p_asset_id: id, p_units_used_to_date: units });
+      if (error) { alert(error.message); return; }
+      render();
+    };
+    var eventForm = document.getElementById("event-form");
+    if (eventForm) eventForm.onsubmit = async function (e) {
+      e.preventDefault();
+      var fd = new FormData(eventForm);
+      const { error } = await supabase.rpc("add_valuation_event", {
+        p_asset_id: id,
+        p_type: fd.get("type"),
+        p_amount: Number(fd.get("amount")),
+        p_note: fd.get("note") || null,
+      });
+      if (error) { alert(error.message); return; }
+      render();
+    };
+  }
+
+  supabase.auth.onAuthStateChange(function () { render(); });
+  render();
+}
+</script>
+
+<footer class="app-footer">
+  Mining Asset Platform &middot; <a href="https://github.com/jay1724/asset-management-software" target="_blank" rel="noopener">source on GitHub</a>
+</footer>
 
 </body>
 </html>

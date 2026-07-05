@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Demo Mining Co · Asset Platform</title>
+<meta name="description" content="Interactive, in-browser demo of the mining asset management platform — no server required." />
+<style>
+  :root {
+    --tenant-primary: #0f172a;
+    --tenant-secondary: #f59e0b;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --ink: #0f172a;
+    --ink-muted: #64748b;
+    --border: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --danger: #b91c1c;
+    --shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b1120;
+    --surface: #111827;
+    --ink: #e5e7eb;
+    --ink-muted: #94a3b8;
+    --border: #263041;
+    --code-bg: #17202f;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b1120;
+      --surface: #111827;
+      --ink: #e5e7eb;
+      --ink-muted: #94a3b8;
+      --border: #263041;
+      --code-bg: #17202f;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  a { color: inherit; }
+  button, input, select { font: inherit; color: inherit; }
+
+  .banner {
+    background: var(--code-bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    text-align: center;
+    padding: 6px 12px;
+  }
+  .banner a { color: var(--tenant-secondary); font-weight: 600; text-decoration: none; }
+  .banner a:hover { text-decoration: underline; }
+
+  header.appbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 12px 24px;
+  }
+  .logo-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--tenant-primary);
+    flex-shrink: 0;
+  }
+  .tenant-name { font-weight: 700; font-size: 1.05rem; color: var(--tenant-primary); }
+  :root[data-theme="dark"] .tenant-name { color: #fff; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tenant-name { color: #fff; } }
+
+  nav.tabs { display: flex; gap: 18px; margin-left: 24px; font-size: 0.9rem; }
+  nav.tabs a { text-decoration: none; color: var(--ink-muted); font-weight: 600; padding: 4px 0; border-bottom: 2px solid transparent; }
+  nav.tabs a.active { color: var(--ink); border-color: var(--tenant-secondary); }
+  .spacer { flex: 1; }
+  .who { font-size: 0.82rem; color: var(--ink-muted); margin-right: 12px; text-align: right; }
+  .who b { color: var(--ink); }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 28px 24px 80px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 0 0 12px; }
+  .muted { color: var(--ink-muted); }
+  .text-xs { font-size: 0.78rem; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 7px;
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .btn.primary { background: var(--tenant-primary); color: #fff; border-color: var(--tenant-primary); }
+  .btn.ghost { background: transparent; border-color: transparent; color: var(--ink-muted); }
+  .btn.ghost:hover { color: var(--ink); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: end; margin-bottom: 20px; }
+  .field { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
+  .field span.label { font-weight: 600; color: var(--ink-muted); font-size: 0.78rem; }
+  .field input, .field select {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--ink);
+    border-radius: 6px;
+    padding: 7px 9px;
+  }
+  .hint { font-size: 0.72rem; color: var(--ink-muted); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--ink-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  tr:last-child td { border-bottom: none; }
+  td a.link { color: var(--tenant-primary); font-weight: 600; text-decoration: none; }
+  :root[data-theme="dark"] td a.link { color: var(--tenant-secondary); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) td a.link { color: var(--tenant-secondary); } }
+  td a.link:hover { text-decoration: underline; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .stat .label { font-size: 0.72rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .stat .value { font-size: 1.2rem; font-weight: 700; margin-top: 2px; }
+  .stat.highlight .value { color: var(--tenant-primary); }
+  :root[data-theme="dark"] .stat.highlight .value { color: var(--tenant-secondary); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stat.highlight .value { color: var(--tenant-secondary); } }
+
+  section.block { margin-top: 30px; }
+  .row-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+
+  .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: var(--code-bg); color: var(--ink-muted); }
+  .badge.role { background: color-mix(in srgb, var(--tenant-secondary) 20%, transparent); color: var(--tenant-secondary); }
+
+  .empty { color: var(--ink-muted); padding: 18px 0; text-align: center; font-size: 0.9rem; }
+  .notice { border: 1px solid #fbbf24; background: color-mix(in srgb, #fbbf24 15%, transparent); color: #92400e; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 16px; }
+  :root[data-theme="dark"] .notice { color: #fbbf24; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .notice { color: #fbbf24; } }
+
+  .login-wrap { max-width: 380px; margin: 60px auto; }
+  .login-wrap .card { padding: 28px; }
+  .login-users { margin-top: 18px; font-size: 0.78rem; color: var(--ink-muted); }
+  .login-users code { background: var(--code-bg); border-radius: 4px; padding: 1px 5px; }
+  .error-text { color: var(--danger); font-size: 0.85rem; }
+
+  footer.app-footer { text-align: center; padding: 24px; font-size: 0.78rem; color: var(--ink-muted); }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  This is a self-contained, in-browser demo with sample data (nothing leaves your device) &middot;
+  <a href="https://github.com/jay1724/asset-management-software" target="_blank" rel="noopener">View the real source on GitHub</a>
+</div>
+
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "mining-demo-state-v3";
+  var SESSION_KEY = "mining-demo-session-v3";
+  var MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+
+  // ---------------------------------------------------------------------
+  // Seed data — mirrors apps/api/prisma/seed.ts
+  // ---------------------------------------------------------------------
+  function seedState() {
+    var now = Date.now();
+    return {
+      tenant: {
+        name: "Demo Mining Co",
+        primaryColor: "#0f172a",
+        secondaryColor: "#f59e0b",
+      },
+      users: [
+        { email: "admin@demo.test", password: "password123", role: "ADMIN", fullName: "Ada Admin" },
+        { email: "manager@demo.test", password: "password123", role: "SITE_MANAGER", fullName: "Sam Manager" },
+        { email: "tech@demo.test", password: "password123", role: "TECHNICIAN", fullName: "Theo Technician" },
+        { email: "auditor@demo.test", password: "password123", role: "AUDITOR", fullName: "Ava Auditor" },
+      ],
+      sites: [
+        { id: "site-1", name: "Kalgoorlie Pit 1", location: "Kalgoorlie, WA", timezone: "Australia/Perth" },
+      ],
+      categories: [
+        { id: "cat-1", name: "Haul Trucks", defaultDepreciationMethod: "UNITS_OF_PRODUCTION" },
+        { id: "cat-2", name: "Excavators", defaultDepreciationMethod: "DECLINING_BALANCE" },
+        { id: "cat-3", name: "Light Vehicles", defaultDepreciationMethod: "STRAIGHT_LINE" },
+      ],
+      assets: [
+        {
+          id: "asset-1", siteId: "site-1", categoryId: "cat-1",
+          name: "CAT 793F", serialNo: "SN-HT-001",
+          purchaseDate: "2023-01-01", purchaseValue: 500000, currentValue: 350000,
+          depreciationMethod: "UNITS_OF_PRODUCTION", unitOfMeasure: "TONNAGE", status: "ACTIVE",
+          schedule: { salvageValue: 50000, usefulLifeYears: null, totalExpectedUnits: 900000, unitsUsedToDate: 300000, lastCalculatedValue: 350000, lastRunDate: now, rate: null },
+          events: [{ id: "ev-1", type: "DEPRECIATION", source: "SYSTEM_CALCULATED", amount: 0.5, resultingValue: 350000, note: null, createdAt: now }],
+        },
+        {
+          id: "asset-2", siteId: "site-1", categoryId: "cat-2",
+          name: "Komatsu PC5500", serialNo: "SN-EX-002",
+          purchaseDate: "2022-06-01", purchaseValue: 1200000, currentValue: 1200000,
+          depreciationMethod: "DECLINING_BALANCE", unitOfMeasure: "HOURS", status: "ACTIVE",
+          schedule: { salvageValue: 100000, usefulLifeYears: 12, totalExpectedUnits: null, unitsUsedToDate: 0, lastCalculatedValue: null, lastRunDate: null, rate: null },
+          events: [],
+        },
+        {
+          id: "asset-3", siteId: "site-1", categoryId: "cat-3",
+          name: "Toyota Land Cruiser", serialNo: "SN-LV-003",
+          purchaseDate: "2024-03-15", purchaseValue: 80000, currentValue: 80000,
+          depreciationMethod: "STRAIGHT_LINE", unitOfMeasure: "CALENDAR", status: "ACTIVE",
+          schedule: { salvageValue: 10000, usefulLifeYears: 7, totalExpectedUnits: null, unitsUsedToDate: 0, lastCalculatedValue: null, lastRunDate: null, rate: null },
+          events: [],
+        },
+      ],
+    };
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var fresh = seedState();
+    saveState(fresh);
+    return fresh;
+  }
+  function saveState(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+  function resetState() { localStorage.removeItem(STORAGE_KEY); state = loadState(); }
+
+  var state = loadState();
+
+  function currentUser() {
+    var email = sessionStorage.getItem(SESSION_KEY);
+    if (!email) return null;
+    for (var i = 0; i < state.users.length; i++) if (state.users[i].email === email) return state.users[i];
+    return null;
+  }
+  function login(email, password) {
+    for (var i = 0; i < state.users.length; i++) {
+      if (state.users[i].email === email && state.users[i].password === password) {
+        sessionStorage.setItem(SESSION_KEY, email);
+        return true;
+      }
+    }
+    return false;
+  }
+  function logout() { sessionStorage.removeItem(SESSION_KEY); }
+  function can(user, roles) { return !!user && roles.indexOf(user.role) !== -1; }
+
+  // ---------------------------------------------------------------------
+  // Depreciation engine — mirrors apps/api/src/depreciation/depreciation-calculator.ts
+  // ---------------------------------------------------------------------
+  var Depreciation = {
+    straightLine: function (purchaseValue, salvageValue, usefulLifeYears, yearsElapsed) {
+      var annual = (purchaseValue - salvageValue) / usefulLifeYears;
+      var capped = Math.min(yearsElapsed, usefulLifeYears);
+      var currentValue = Math.max(purchaseValue - annual * capped, salvageValue);
+      return { currentValue: currentValue, periodDepreciation: annual };
+    },
+    decliningBalance: function (currentBookValue, usefulLifeYears, salvageValue, rate) {
+      var r = rate || (2 / usefulLifeYears);
+      var period = currentBookValue * r;
+      var currentValue = Math.max(currentBookValue - period, salvageValue);
+      return { currentValue: currentValue, periodDepreciation: period };
+    },
+    unitsOfProduction: function (purchaseValue, salvageValue, totalExpectedUnits, unitsUsedToDate) {
+      var perUnit = (purchaseValue - salvageValue) / totalExpectedUnits;
+      var capped = Math.min(unitsUsedToDate, totalExpectedUnits);
+      var currentValue = Math.max(purchaseValue - perUnit * capped, salvageValue);
+      return { currentValue: currentValue, periodDepreciation: perUnit };
+    },
+  };
+
+  function recalculate(asset) {
+    var s = asset.schedule;
+    var result;
+    if (asset.depreciationMethod === "STRAIGHT_LINE") {
+      var yearsElapsed = (Date.now() - new Date(asset.purchaseDate).getTime()) / MS_PER_YEAR;
+      result = Depreciation.straightLine(asset.purchaseValue, s.salvageValue, s.usefulLifeYears, yearsElapsed);
+    } else if (asset.depreciationMethod === "DECLINING_BALANCE") {
+      var bookValue = s.lastCalculatedValue != null ? s.lastCalculatedValue : asset.currentValue;
+      result = Depreciation.decliningBalance(bookValue, s.usefulLifeYears, s.salvageValue, s.rate);
+    } else {
+      result = Depreciation.unitsOfProduction(asset.purchaseValue, s.salvageValue, s.totalExpectedUnits, s.unitsUsedToDate);
+    }
+    asset.currentValue = result.currentValue;
+    s.lastCalculatedValue = result.currentValue;
+    s.lastRunDate = Date.now();
+    asset.events.unshift({
+      id: "ev-" + Math.random().toString(36).slice(2),
+      type: "DEPRECIATION", source: "SYSTEM_CALCULATED",
+      amount: result.periodDepreciation, resultingValue: result.currentValue,
+      note: null, createdAt: Date.now(),
+    });
+    saveState(state);
+  }
+
+  function addValuationEvent(asset, type, amount, note) {
+    var resultingValue = asset.currentValue + amount;
+    asset.currentValue = resultingValue;
+    asset.events.unshift({
+      id: "ev-" + Math.random().toString(36).slice(2),
+      type: type, source: "MANUAL_ENTRY", amount: amount, resultingValue: resultingValue,
+      note: note || null, createdAt: Date.now(),
+    });
+    saveState(state);
+  }
+
+  // ---------------------------------------------------------------------
+  // Formatting
+  // ---------------------------------------------------------------------
+  var currencyFmt = new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", maximumFractionDigits: 0 });
+  function money(v) { return currencyFmt.format(Number(v)); }
+  function dt(ts) { return ts ? new Date(ts).toLocaleString() : "Never"; }
+  function num(v) { return Number(v).toLocaleString(); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function byId(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+
+  // ---------------------------------------------------------------------
+  // Router
+  // ---------------------------------------------------------------------
+  function route() { return location.hash.replace(/^#/, "") || "/assets"; }
+  window.addEventListener("hashchange", render);
+  window.addEventListener("DOMContentLoaded", render);
+
+  document.documentElement.style.setProperty("--tenant-primary", state.tenant.primaryColor);
+  document.documentElement.style.setProperty("--tenant-secondary", state.tenant.secondaryColor);
+
+  function render() {
+    var app = document.getElementById("app");
+    var user = currentUser();
+    var path = route();
+
+    if (!user) {
+      app.innerHTML = renderLogin();
+      wireLogin();
+      return;
+    }
+    if (path === "/login") { location.hash = "#/assets"; return; }
+
+    var body = "";
+    if (path === "/sites") body = renderSites(user);
+    else if (path === "/asset-categories") body = renderCategories(user);
+    else if (/^\/assets\/(.+)$/.test(path)) body = renderAssetDetail(user, RegExp.$1);
+    else body = renderAssets(user);
+
+    app.innerHTML = renderShell(user, path) + body + "</main>";
+    wireGlobal();
+    if (path === "/sites") wireSites(user);
+    else if (path === "/asset-categories") wireCategories(user);
+    else if (/^\/assets\/(.+)$/.test(path)) wireAssetDetail(user, RegExp.$1);
+    else wireAssets(user);
+  }
+
+  function renderShell(user, path) {
+    function tab(href, label) {
+      var active = path === href || (href === "/assets" && /^\/assets/.test(path));
+      return '<a href="#' + href + '" class="' + (active ? "active" : "") + '">' + label + "</a>";
+    }
+    return (
+      '<header class="appbar">' +
+        '<div class="logo-badge">' + esc(state.tenant.name.charAt(0)) + "</div>" +
+        '<span class="tenant-name">' + esc(state.tenant.name) + "</span>" +
+        '<nav class="tabs">' +
+          tab("/assets", "Assets") + tab("/sites", "Sites") + tab("/asset-categories", "Categories") +
+        "</nav>" +
+        '<div class="spacer"></div>' +
+        '<div class="who">' +
+          '<b>' + esc(user.fullName) + "</b> <span class=\"badge role\">" + esc(user.role) + "</span>" +
+        "</div>" +
+        '<button class="btn ghost" id="btn-reset" title="Wipe this browser\'s demo data and reseed">Reset demo</button>' +
+        '<button class="btn ghost" id="btn-logout">Sign out</button>' +
+      "</header>" +
+      '<main id="main-content">'
+    ) + "";
+  }
+
+  function wireGlobal() {
+    var logoutBtn = document.getElementById("btn-logout");
+    if (logoutBtn) logoutBtn.onclick = function () { logout(); render(); };
+    var resetBtn = document.getElementById("btn-reset");
+    if (resetBtn) resetBtn.onclick = function () {
+      if (confirm("Reset this browser's demo data back to the seed set?")) { resetState(); render(); }
+    };
+  }
+
+  // ---------------------------------------------------------------------
+  // Login
+  // ---------------------------------------------------------------------
+  function renderLogin() {
+    return (
+      '<div class="login-wrap">' +
+        '<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:20px;">' +
+          '<div class="logo-badge">' + esc(state.tenant.name.charAt(0)) + "</div>" +
+          '<span class="tenant-name" style="font-size:1.2rem;">' + esc(state.tenant.name) + "</span>" +
+        "</div>" +
+        '<div class="card">' +
+          "<h1>Sign in</h1>" +
+          '<p class="muted text-xs" style="margin-top:-6px;">Demo tenant &mdash; try any of the accounts below.</p>' +
+          '<form id="login-form" style="display:flex;flex-direction:column;gap:12px;margin-top:14px;">' +
+            '<div class="field"><span class="label">Email</span><input type="email" id="login-email" required></div>' +
+            '<div class="field"><span class="label">Password</span><input type="password" id="login-password" required></div>' +
+            '<div id="login-error" class="error-text"></div>' +
+            '<button type="submit" class="btn primary">Sign in</button>' +
+          "</form>" +
+          '<div class="login-users">' +
+            "Seeded logins (password <code>password123</code>):<br>" +
+            state.users.map(function (u) { return '&bull; <code>' + esc(u.email) + "</code> &mdash; " + esc(u.role); }).join("<br>") +
+          "</div>" +
+        "</div>" +
+      "</div>"
+    );
+  }
+  function wireLogin() {
+    var form = document.getElementById("login-form");
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var email = document.getElementById("login-email").value.trim();
+      var password = document.getElementById("login-password").value;
+      if (login(email, password)) { location.hash = "#/assets"; render(); }
+      else document.getElementById("login-error").textContent = "Invalid email or password.";
+    };
+    // convenience: click a seeded email to prefill
+    document.querySelectorAll(".login-users code").forEach(function (el) {
+      el.style.cursor = "pointer";
+      el.title = "Click to use this email";
+      el.onclick = function () { document.getElementById("login-email").value = el.textContent; };
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Sites
+  // ---------------------------------------------------------------------
+  function renderSites(user) {
+    var canWrite = can(user, ["ADMIN"]);
+    var rows = state.sites.map(function (s) {
+      return "<tr><td>" + esc(s.name) + "</td><td>" + esc(s.location || "—") + "</td><td>" + esc(s.timezone) + "</td></tr>";
+    }).join("");
+    return (
+      "<h1>Sites</h1>" +
+      (canWrite ? (
+        '<form id="site-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Name</span><input name="name" required></div>' +
+          '<div class="field"><span class="label">Location</span><input name="location"></div>' +
+          '<div class="field"><span class="label">Timezone</span><input name="timezone" placeholder="UTC"></div>' +
+          '<div class="field"><button type="submit" class="btn primary">Add site</button></div>' +
+        "</form>"
+      ) : '<p class="notice">Only Admins can add sites. Signed in as ' + esc(user.role) + ".</p>") +
+      '<table><thead><tr><th>Name</th><th>Location</th><th>Timezone</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="3" class="empty">No sites yet.</td></tr>') +
+      "</tbody></table>"
+    );
+  }
+  function wireSites(user) {
+    var form = document.getElementById("site-form");
+    if (!form) return;
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      state.sites.push({ id: "site-" + Math.random().toString(36).slice(2), name: fd.get("name"), location: fd.get("location") || null, timezone: fd.get("timezone") || "UTC" });
+      saveState(state);
+      render();
+    };
+  }
+
+  // ---------------------------------------------------------------------
+  // Categories
+  // ---------------------------------------------------------------------
+  function renderCategories(user) {
+    var canWrite = can(user, ["ADMIN"]);
+    var rows = state.categories.map(function (c) {
+      return "<tr><td>" + esc(c.name) + "</td><td>" + esc(c.defaultDepreciationMethod) + "</td></tr>";
+    }).join("");
+    return (
+      "<h1>Asset Categories</h1>" +
+      (canWrite ? (
+        '<form id="cat-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Name</span><input name="name" required></div>' +
+          '<div class="field"><span class="label">Default depreciation method</span>' +
+            '<select name="method">' +
+              '<option value="STRAIGHT_LINE">Straight-line</option>' +
+              '<option value="DECLINING_BALANCE">Declining balance</option>' +
+              '<option value="UNITS_OF_PRODUCTION">Units of production</option>' +
+            "</select></div>" +
+          '<div class="field"><button type="submit" class="btn primary">Add category</button></div>' +
+        "</form>"
+      ) : '<p class="notice">Only Admins can add categories. Signed in as ' + esc(user.role) + ".</p>") +
+      '<table><thead><tr><th>Name</th><th>Default depreciation method</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="2" class="empty">No categories yet.</td></tr>') +
+      "</tbody></table>"
+    );
+  }
+  function wireCategories(user) {
+    var form = document.getElementById("cat-form");
+    if (!form) return;
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      state.categories.push({ id: "cat-" + Math.random().toString(36).slice(2), name: fd.get("name"), defaultDepreciationMethod: fd.get("method") });
+      saveState(state);
+      render();
+    };
+  }
+
+  // ---------------------------------------------------------------------
+  // Assets list
+  // ---------------------------------------------------------------------
+  function renderAssets(user) {
+    var canWrite = can(user, ["ADMIN", "SITE_MANAGER"]);
+    var rows = state.assets.map(function (a) {
+      var site = byId(state.sites, a.siteId);
+      var cat = byId(state.categories, a.categoryId);
+      return (
+        "<tr><td><a class=\"link\" href=\"#/assets/" + a.id + "\">" + esc(a.name) + "</a>" +
+        '<div class="muted text-xs">' + esc(a.serialNo) + "</div></td>" +
+        "<td>" + esc(site ? site.name : "—") + "</td>" +
+        "<td>" + esc(cat ? cat.name : "—") + "</td>" +
+        "<td>" + esc(a.depreciationMethod) + "</td>" +
+        "<td>" + money(a.currentValue) + "</td>" +
+        "<td>" + esc(a.status) + "</td></tr>"
+      );
+    }).join("");
+
+    var siteOpts = state.sites.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + "</option>"; }).join("");
+    var catOpts = state.categories.map(function (c) { return '<option value="' + c.id + '">' + esc(c.name) + "</option>"; }).join("");
+
+    return (
+      "<h1>Assets</h1>" +
+      (!canWrite ? '<p class="notice">Only Admins and Site Managers can add assets. Signed in as ' + esc(user.role) + ".</p>" :
+        state.sites.length === 0 || state.categories.length === 0 ? '<p class="notice">Create at least one site and category before adding assets.</p>' : (
+        '<form id="asset-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Name</span><input name="name" required></div>' +
+          '<div class="field"><span class="label">Serial #</span><input name="serialNo" required></div>' +
+          '<div class="field"><span class="label">Site</span><select name="siteId" required>' + siteOpts + "</select></div>" +
+          '<div class="field"><span class="label">Category</span><select name="categoryId" required>' + catOpts + "</select></div>" +
+          '<div class="field"><span class="label">Purchase date</span><input type="date" name="purchaseDate" required></div>' +
+          '<div class="field"><span class="label">Purchase value (R)</span><input type="number" step="0.01" name="purchaseValue" required></div>' +
+          '<div class="field"><span class="label">Depreciation method</span><select name="depreciationMethod">' +
+            '<option value="STRAIGHT_LINE">Straight-line</option>' +
+            '<option value="DECLINING_BALANCE">Declining balance</option>' +
+            '<option value="UNITS_OF_PRODUCTION">Units of production</option>' +
+          "</select></div>" +
+          '<div class="field"><span class="label">Unit of measure</span><select name="unitOfMeasure">' +
+            '<option value="CALENDAR">Calendar</option><option value="HOURS">Hours</option><option value="TONNAGE">Tonnage</option>' +
+          "</select></div>" +
+          '<div class="field"><span class="label">Salvage value (R)</span><input type="number" step="0.01" name="salvageValue" value="0"></div>' +
+          '<div class="field"><span class="label">Useful life (years)</span><input type="number" name="usefulLifeYears"><span class="hint">Straight-line / declining</span></div>' +
+          '<div class="field"><span class="label">Total expected units</span><input type="number" name="totalExpectedUnits"><span class="hint">Units of production</span></div>' +
+          '<div class="field"><button type="submit" class="btn primary">Add asset</button></div>' +
+        "</form>"
+      )) +
+      '<table><thead><tr><th>Name</th><th>Site</th><th>Category</th><th>Method</th><th>Current value</th><th>Status</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="6" class="empty">No assets yet.</td></tr>') +
+      "</tbody></table>"
+    );
+  }
+  function wireAssets(user) {
+    var form = document.getElementById("asset-form");
+    if (!form) return;
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      var fd = new FormData(form);
+      var purchaseValue = Number(fd.get("purchaseValue"));
+      state.assets.push({
+        id: "asset-" + Math.random().toString(36).slice(2),
+        siteId: fd.get("siteId"), categoryId: fd.get("categoryId"),
+        name: fd.get("name"), serialNo: fd.get("serialNo"),
+        purchaseDate: fd.get("purchaseDate"), purchaseValue: purchaseValue, currentValue: purchaseValue,
+        depreciationMethod: fd.get("depreciationMethod"), unitOfMeasure: fd.get("unitOfMeasure"), status: "ACTIVE",
+        schedule: {
+          salvageValue: Number(fd.get("salvageValue") || 0),
+          usefulLifeYears: fd.get("usefulLifeYears") ? Number(fd.get("usefulLifeYears")) : null,
+          totalExpectedUnits: fd.get("totalExpectedUnits") ? Number(fd.get("totalExpectedUnits")) : null,
+          unitsUsedToDate: 0, lastCalculatedValue: null, lastRunDate: null, rate: null,
+        },
+        events: [],
+      });
+      saveState(state);
+      render();
+    };
+  }
+
+  // ---------------------------------------------------------------------
+  // Asset detail
+  // ---------------------------------------------------------------------
+  function renderAssetDetail(user, id) {
+    var asset = byId(state.assets, id);
+    if (!asset) return '<p class="empty">Asset not found. <a class="link" href="#/assets">Back to assets</a></p>';
+    var site = byId(state.sites, asset.siteId);
+    var cat = byId(state.categories, asset.categoryId);
+    var s = asset.schedule;
+    var canRecalc = can(user, ["ADMIN", "SITE_MANAGER"]);
+    var canManual = can(user, ["ADMIN"]);
+
+    var scheduleRows =
+      "<dt class=\"muted\">Salvage value</dt><dd>" + money(s.salvageValue) + "</dd>" +
+      (s.usefulLifeYears != null ? "<dt class=\"muted\">Useful life</dt><dd>" + s.usefulLifeYears + " years</dd>" : "") +
+      (s.totalExpectedUnits != null ? "<dt class=\"muted\">Total expected units</dt><dd>" + num(s.totalExpectedUnits) + "</dd><dt class=\"muted\">Units used to date</dt><dd>" + num(s.unitsUsedToDate) + "</dd>" : "") +
+      "<dt class=\"muted\">Last run</dt><dd>" + dt(s.lastRunDate) + "</dd>";
+
+    var eventRows = asset.events.map(function (ev) {
+      return "<tr><td>" + dt(ev.createdAt) + "</td><td>" + esc(ev.type) + "</td><td>" + esc(ev.source) + "</td><td>" + money(ev.amount) + "</td><td>" + money(ev.resultingValue) + "</td><td>" + esc(ev.note || "—") + "</td></tr>";
+    }).join("");
+
+    return (
+      "<h1>" + esc(asset.name) + "</h1>" +
+      '<p class="muted">' + esc(asset.serialNo) + " &middot; " + esc(site ? site.name : "—") + " &middot; " + esc(cat ? cat.name : "—") + "</p>" +
+      '<div class="stat-grid">' +
+        '<div class="stat"><div class="label">Purchase value</div><div class="value">' + money(asset.purchaseValue) + "</div></div>" +
+        '<div class="stat highlight"><div class="label">Current value</div><div class="value">' + money(asset.currentValue) + "</div></div>" +
+        '<div class="stat"><div class="label">Method</div><div class="value" style="font-size:0.95rem;">' + esc(asset.depreciationMethod) + "</div></div>" +
+        '<div class="stat"><div class="label">Status</div><div class="value" style="font-size:0.95rem;">' + esc(asset.status) + "</div></div>" +
+      "</div>" +
+
+      '<section class="block"><h2>Depreciation</h2><div class="card row-actions">' +
+        '<dl style="display:grid;grid-template-columns:auto auto;gap:2px 24px;font-size:0.88rem;margin:0;">' + scheduleRows + "</dl>" +
+        (canRecalc ? '<button id="btn-recalc" class="btn primary">Recalculate now</button>' : "") +
+        (canRecalc && asset.depreciationMethod === "UNITS_OF_PRODUCTION" ? (
+          '<form id="usage-form" class="row-actions">' +
+            '<div class="field"><span class="label">Units used to date</span><input type="number" step="0.01" name="unitsUsedToDate" value="' + s.unitsUsedToDate + '"></div>' +
+            '<button type="submit" class="btn">Update usage</button>' +
+          "</form>"
+        ) : "") +
+      "</div></section>" +
+
+      (canManual ? (
+        '<section class="block"><h2>Manual valuation event</h2>' +
+        '<p class="muted text-xs">For appreciation (land, mineral rights) or one-off adjustments. Always logged, never silent.</p>' +
+        '<form id="event-form" class="form-grid card">' +
+          '<div class="field"><span class="label">Type</span><select name="type"><option value="APPRECIATION">Appreciation</option><option value="MANUAL_ADJUSTMENT">Manual adjustment</option></select></div>' +
+          '<div class="field"><span class="label">Amount (signed, R)</span><input type="number" step="0.01" name="amount" required></div>' +
+          '<div class="field"><span class="label">Note</span><input name="note"></div>' +
+          '<div class="field"><button type="submit" class="btn">Log event</button></div>' +
+        "</form></section>"
+      ) : "") +
+
+      '<section class="block"><h2>Valuation history</h2>' +
+      '<table><thead><tr><th>Date</th><th>Type</th><th>Source</th><th>Amount</th><th>Resulting value</th><th>Note</th></tr></thead><tbody>' +
+      (eventRows || '<tr><td colspan="6" class="empty">No valuation events yet.</td></tr>') +
+      "</tbody></table></section>" +
+      '<p style="margin-top:24px;"><a class="link" href="#/assets">&larr; Back to assets</a></p>'
+    );
+  }
+  function wireAssetDetail(user, id) {
+    var asset = byId(state.assets, id);
+    if (!asset) return;
+    var recalcBtn = document.getElementById("btn-recalc");
+    if (recalcBtn) recalcBtn.onclick = function () { recalculate(asset); render(); };
+    var usageForm = document.getElementById("usage-form");
+    if (usageForm) usageForm.onsubmit = function (e) {
+      e.preventDefault();
+      asset.schedule.unitsUsedToDate = Number(new FormData(usageForm).get("unitsUsedToDate"));
+      saveState(state);
+      render();
+    };
+    var eventForm = document.getElementById("event-form");
+    if (eventForm) eventForm.onsubmit = function (e) {
+      e.preventDefault();
+      var fd = new FormData(eventForm);
+      addValuationEvent(asset, fd.get("type"), Number(fd.get("amount")), fd.get("note"));
+      render();
+    };
+  }
+
+  render();
+})();
+</script>
+
+<footer class="app-footer">
+  Interactive demo &middot; <a href="https://github.com/jay1724/asset-management-software" target="_blank" rel="noopener">source on GitHub</a>
+</footer>
+
+</body>
+</html>
