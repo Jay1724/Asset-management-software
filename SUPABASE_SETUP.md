@@ -22,9 +22,25 @@ need to start over).
 
 ## 3. Seed demo data
 
-This creates a demo tenant, four demo users (one per role), and a few
-sample assets — mirrors what `apps/api/prisma/seed.ts` does for the
-NestJS version of this app.
+There are two ways to do this — pick whichever you're more comfortable
+with. Either way, do the tenant + one admin user first (option B, steps
+1–3) since assets need somewhere to belong to.
+
+**Option A — no terminal needed, dashboard only:**
+1. **Table Editor → tenants** → Insert row: `name` = `Demo Mining Co`,
+   `subdomain` = `demo`. Copy the generated `id`.
+2. **Authentication → Users → Add user**: create an email/password,
+   toggle **Auto Confirm User** on.
+3. **Table Editor → profiles**: find the row with that user's id (a
+   trigger creates it automatically), set `tenant_id` to the id from
+   step 1 and `role` to `ADMIN`.
+4. Log into `index.html` with that account and create sites/categories/
+   assets through the app's own forms — or, for a quick set of sample
+   assets, paste [`supabase/seed-demo-assets.sql`](supabase/seed-demo-assets.sql)
+   into the SQL Editor and run it (safe to re-run; it skips anything
+   that already exists).
+
+**Option B — terminal, creates 4 role accounts + sample assets in one go:**
 
 ```bash
 cd supabase
@@ -45,7 +61,11 @@ npm run seed
 ```
 
 This creates the demo logins (password `password123` for all):
-`admin@demo.test`, `manager@demo.test`, `tech@demo.test`, `auditor@demo.test`.
+`admin@demo.test`, `manager@demo.test`, `tech@demo.test`, `auditor@demo.test`,
+plus a starter site/category/asset. Layer
+[`supabase/seed-demo-assets.sql`](supabase/seed-demo-assets.sql) on top
+any time for a fuller set of demo assets across all three depreciation
+methods.
 
 ## 4. Wire up the frontend
 
