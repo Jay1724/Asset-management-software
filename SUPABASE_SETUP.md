@@ -1,6 +1,6 @@
 # Supabase setup
 
-This gets `index.html` running as a real, hosted, login-protected web app —
+This gets `app.html` running as a real, hosted, login-protected web app —
 no server for you to run. The page talks directly to a Supabase project
 (Postgres + Auth + Row-Level Security) from the browser.
 
@@ -34,7 +34,7 @@ with. Either way, do the tenant + one admin user first (option B, steps
 3. **Table Editor → profiles**: find the row with that user's id (a
    trigger creates it automatically), set `tenant_id` to the id from
    step 1 and `role` to `ADMIN`.
-4. Log into `index.html` with that account and create sites/categories/
+4. Log into `app.html` with that account and create sites/categories/
    assets through the app's own forms — or, for a quick set of sample
    assets, paste [`supabase/seed-demo-assets.sql`](supabase/seed-demo-assets.sql)
    into the SQL Editor and run it (safe to re-run; it skips anything
@@ -52,7 +52,7 @@ Edit `.env` and fill in:
 - `SUPABASE_URL` — Project Settings → API → Project URL
 - `SUPABASE_SERVICE_ROLE_KEY` — Project Settings → API → service_role key
   (**secret** — this bypasses Row-Level Security; never put it in
-  `index.html` or commit it)
+  `app.html` or commit it)
 
 Then run:
 
@@ -73,7 +73,7 @@ Project Settings → API → copy the **Project URL** and the **anon public**
 key (not the service role key — the anon key is safe to expose in
 client-side code; RLS is what actually protects the data).
 
-Open `index.html` and set:
+Open `app.html` and set:
 
 ```js
 const SUPABASE_URL = "https://xxxxxxxxxxxx.supabase.co";

@@ -7,23 +7,25 @@ slice of the platform — multi-tenancy, auth, white-label theming, core
 asset CRUD, and the full depreciation engine — described in the product
 spec. See "What's built vs. what's next" below for scope.
 
-## Two ways to run this
+## Pages in this repo
 
-1. **`index.html` + Supabase** — a single static HTML file that talks
-   directly to a hosted Supabase project (Postgres + Auth + Row-Level
-   Security) from the browser. No server to run yourself; deploy the file
-   anywhere static (GitHub Pages works) and it's a real, login-protected,
-   multi-user web app. See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) to wire
-   it up (~10 minutes). The schema/RLS/RPC functions live in
-   [`supabase/schema.sql`](supabase/schema.sql).
-2. **NestJS + Next.js** — the fuller implementation described in the rest
-   of this README, for when you want a real backend service (e.g. to add
-   telematics ingestion, scheduled jobs, or anything else that needs a
-   server) rather than a client talking straight to Postgres.
+- [`index.html`](index.html) — the marketing/overview page. Start here.
+- [`app.html`](app.html) — the real, login-protected app: a single static
+  HTML file that talks directly to a hosted Supabase project (Postgres +
+  Auth + Row-Level Security) from the browser. No server to run yourself;
+  deploy it anywhere static (GitHub Pages works) and it's a real,
+  multi-user web app. See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) to wire
+  it up (~10 minutes). The schema/RLS/RPC functions live in
+  [`supabase/schema.sql`](supabase/schema.sql).
+- [`demo-offline.html`](demo-offline.html) — the same UI as `app.html`
+  with fake data kept in your browser's `localStorage`, no login or
+  backend at all. Useful for a quick look around before setting anything
+  up.
 
-There's also [`demo-offline.html`](demo-offline.html) — the same UI with
-fake data kept in your browser's `localStorage`, no login or backend at
-all. Useful for a quick look around before setting anything up.
+There's also a fuller **NestJS + Next.js** implementation described in
+the rest of this README, for when you want a real backend service (e.g.
+to add telematics ingestion, scheduled jobs, or anything else that needs
+a server) rather than a client talking straight to Postgres.
 
 ## Architecture
 
