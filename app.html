@@ -176,8 +176,7 @@
 <body>
 
 <div class="banner">
-  <a href="index.html">&larr; Back to overview</a> &middot;
-  <a href="https://github.com/jay1724/asset-management-software" target="_blank" rel="noopener">Source on GitHub</a>
+  <a href="index.html">&larr; Back to overview</a>
   &middot; <a href="demo-offline.html">Prefer a no-login sandbox? Try the offline demo</a>
 </div>
 
@@ -215,7 +214,7 @@ function renderSetupNotice() {
         "<li>Open the SQL Editor and run the contents of <code>supabase/schema.sql</code> from this repo.</li>" +
         "<li>From the repo's <code>supabase/</code> folder, run the seed script (see <code>SUPABASE_SETUP.md</code>) to create the demo tenant, users, and sample assets.</li>" +
         "<li>In Project Settings &rarr; API, copy the <b>Project URL</b> and <b>anon public</b> key.</li>" +
-        '<li>Open <code>app.html</code> and set <code class="block">const SUPABASE_URL = "https://xxxx.supabase.co";\nconst SUPABASE_ANON_KEY = "ey...";</code> then save and reload (or redeploy to GitHub Pages).</li>' +
+        '<li>Open <code>app.html</code> and set <code class="block">const SUPABASE_URL = "https://xxxx.supabase.co";\nconst SUPABASE_ANON_KEY = "ey...";</code> then save and reload (or redeploy to your hosting).</li>' +
       "</ol>" +
       '<p class="muted text-xs">Full walkthrough: <a href="SUPABASE_SETUP.md">SUPABASE_SETUP.md</a>. Prefer to look around first? <a href="demo-offline.html">Try the no-login offline demo</a>.</p>' +
     "</div>"
@@ -671,7 +670,7 @@ async function runApp() {
 </script>
 
 <footer class="app-footer">
-  Mining Asset Platform &middot; <a href="https://github.com/jay1724/asset-management-software" target="_blank" rel="noopener">source on GitHub</a>
+  Mining Asset Platform
 </footer>
 
 </body>
